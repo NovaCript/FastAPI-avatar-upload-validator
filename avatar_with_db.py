@@ -49,14 +49,19 @@ def get_db():
         db.close()
 
 
-@app.post("/users")
-async def create_user(username: str, db: Session  = Depends(get_db)):
+@app.post("/create-user/")
+async def create_user(username: str, db: Session = Depends(get_db)):
     user = User(username=username)
     db.add(user)
     db.commit()
-    return {
-        "username": user.username
-    }
+    db.refresh(user)
+
+    # Создание директории для аватарок пользователя
+    user_dir = IMAGEDIR / username
+    user_dir.mkdir(parents=True, exist_ok=True)
+
+    return {"message": "User created", "user_id": user.id}
+
 
 @app.post("/upload-avatar/")
 async def upload_avatar(username: str, file: UploadFile = File(...),
@@ -67,13 +72,16 @@ async def upload_avatar(username: str, file: UploadFile = File(...),
         raise HTTPException(status_code=404, detail="User not found")
 
     user_dir = IMAGEDIR / username
-    user_dir.mkdir(parents=True, exist_ok=True)
 
     if file.size > 2 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="File size is too large")
 
     if file.content_type not in ["image/jpeg", "image/png", "image/jpg"]:
         raise HTTPException(status_code=400, detail="File type is not image")
+
+    if len(list(user_dir.iterdir())) >= 3:
+        raise HTTPException(status_code=400, detail="Too many files")
+
 
     file_path = user_dir / file.filename
     async with aiofiles.open(file_path, "wb") as buffer:
