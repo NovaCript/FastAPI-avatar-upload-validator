@@ -4,7 +4,6 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from typing import List
 
-
 IMAGEDIR = Path("images")
 
 app = FastAPI()
