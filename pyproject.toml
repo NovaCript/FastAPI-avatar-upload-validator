@@ -12,3 +12,4 @@ sqlalchemy = {extras = ["asyncio"], version = "^2.0.30"}
 sqladmin = {extras = ["full"], version = "^0.17.0"}
 python-multipart = "^0.0.9"
 aiofiles = "^23.2.1"
+loguru = "^0.7.2"
